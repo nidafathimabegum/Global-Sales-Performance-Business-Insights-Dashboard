@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Analytics Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a;
+            color: #f1f5f9;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .colors {
+            --primary: #0f172a;
+            --surface: #1e293b;
+            --surface-hi: #334155;
+            --accent: #38bdf8;
+            --accent-dim: rgba(14, 165, 233, 0.25);
+            --green: #34d399;
+            --amber: #fbbf24;
+            --red: #f87171;
+            --purple: #a78bfa;
+            --pink: #f472b6;
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+            --border: #475569;
+        }
+
+        /* Header */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left h1 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-badge {
+            background: var(--accent);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        .header-right {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: right;
+            line-height: 1.6;
+        }
+
+        .header-date {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            padding: 12px 32px;
+            background: var(--primary);
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-dim);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 24px 32px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Section Header */
+        .section-header {
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header-bar {
+            width: 4px;
+            height: 22px;
+            background: var(--accent);
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        .section-header p {        git branch -M main
+        git remote add origin https://github.com/YOUR_USERNAME/customer-analytics-platform.git
+        git push -u origin main
+            font-size: 13px;
+            color: var(--text-dim);
+            margin: 6px 0 0 14px;
+        }
+
+        /* KPI Card */
+        .kpi-cards {
+            display: flex;
+            gap: 14px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px 22px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            flex: 1 1 180px;
+            min-width: 180px;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-title {
+            font-size: 13px;
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .kpi-icon {
+            font-size: 22px;
+        }
+
+        .kpi-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 10px;
+            font-family: 'SF Mono', monospace;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .kpi-badge {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .kpi-badge.positive {
+            color: var(--green);
+            background: rgba(52, 211, 153, 0.1);
+        }
+
+        .kpi-badge.negative {
+            color: var(--red);
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .kpi-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        /* Chart Card */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 16px;
+            margin-top: 22px;
+        }
+
+        .chart-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-grid.equal {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .chart-card {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 240px;
+            margin-top: 12px;
+        }
+
+        /* Mentor Box */
+        .mentor-box {
+            background: #1a1640;
+            border: 1px solid #3b3570;
+            border-radius: 10px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .mentor-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #c4b5fd;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .mentor-btn:hover {
+            background: rgba(196, 181, 253, 0.05);
+        }
+
+        .mentor-arrow {
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .mentor-arrow.open {
+            transform: rotate(90deg);
+        }
+
+        .mentor-content {
+            padding: 0 16px 14px;
+            font-size: 13px;
+            color: #a5b4fc;
+            line-height: 1.7;
+            border-top: 1px solid #3b3570;
+            padding-top: 12px;
+        }
+
+        .mentor-content.hidden {
+            display: none;
+        }
+
+        /* Heatmap Table */
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        .heatmap-table th {
+            text-align: left;
+            padding: 8px 12px;
+            color: var(--text-dim);
+            font-weight: 500;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .heatmap-table th.center {
+            text-align: center;
+        }
+
+        .heatmap-table td {
+            padding: 9px 12px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .heatmap-cell {
+            text-align: center;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-label {
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 8px 6px;
+            color: var(--text-dim);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 9px 6px;
+            color: var(--text);
+            border-bottom: 1px solid rgba(71, 85, 105, 0.25);
+        }
+
+        /* Findings Grid */
+        .findings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .finding-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .finding-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .finding-icon {
+            font-size: 20px;
+        }
+
+        .finding-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .finding-points {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .finding-point {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .finding-bullet {
+            font-size: 10px;
+            margin-top: 3px;
+            min-width: 8px;
+        }
+
+        .finding-text {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Recommendations */
+        .recommendations {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .recommendation {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            background: var(--surface-hi);
+            border-radius: 10px;
+            padding: 16px 18px;
+            border: 1px solid transparent;
+        }
+
+        .recommendation.top {
+            border: 1px solid rgba(52, 211, 153, 0.25);
+        }
+
+        .rec-number {
+            min-width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .rec-number.one {
+            background: var(--green);
+        }
+
+        .rec-number.two {
+            background: var(--accent);
+        }
+
+        .rec-number.three {
+            background: var(--amber);
+        }
+
+        .rec-content {
+            flex: 1;
+        }
+
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .rec-title {
+            font-size: 15px;
+            color: var(--text);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .rec-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rec-tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .rec-tag.impact {
+            font-weight: 700;
+            color: var(--green);
+            background: rgba(52, 211, 153, 0.15);
+        }
+
+        .rec-tag.timeline {
+            color: var(--text-dim);
+            background: var(--surface);
+        }
+
+        .rec-description {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Summary Banner */
+        .summary-banner {
+            background: linear-gradient(135deg, #0c4a6e 0%, #1e3a5f 100%);
+            border-radius: 14px;
+            padding: 28px;
+            margin-top: 22px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .summary-banner h3 {
+            margin: 0 0 6px;
+            font-size: 17px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .summary-banner p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        /* Skills Checklist */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .skill-item {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 10px 14px;
+            border: 1px solid #3b3570;
+        }
+
+        .skill-name {
+            font-size: 13px;
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+
+        .skill-desc {
+            font-size: 11px;
+            color: #a5b4fc;
+            margin-top: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .chart-grid,
+            .findings-grid,
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .header-left,
+            .header-right {
+                width: 100%;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .kpi-cards {
+                flex-direction: column;
+            }
+
+            .kpi-card {
+                flex: 1 1 100%;
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body class="colors">
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <h1><span class="header-badge">PROJ</span> Customer Analytics Platform</h1>
+            <p class="header-subtitle">End-to-End Churn & Lifetime Value Analytics · Portfolio Project</p>
+        </div>
+        <div class="header-right">
+            <div class="header-date">Data Period: Jan – Dec 2024</div>
+            <div>Last Updated: Jan 31, 2025</div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">📊 Overview</button>
+        <button class="tab-btn" onclick="switchTab(1)">📉 Churn Deep-Dive</button>
+        <button class="tab-btn" onclick="switchTab(2)">👥 Cohort Analysis</button>
+        <button class="tab-btn" onclick="switchTab(3)">🎯 Segmentation</button>
+        <button class="tab-btn" onclick="switchTab(4)">📣 Channel ROI</button>
+        <button class="tab-btn" onclick="switchTab(5)">📋 Executive Summary</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <!-- TAB 0: OVERVIEW -->
+        <div id="tab-0" class="tab-panel active">
+            <div class="section-header">
+                <h2><span class="section-header-bar"></span>Dashboard Overview</h2>
+                <p>Key performance indicators at a glance — the executive landing page</p>
+            </div>
+            <div class="mentor-box" onclick="toggleMentor(this)">
+                <button class="mentor-btn">
+                    <span>🎓 Mentor Note: Project Architecture</span>
+                    <span class="mentor-arrow">▶</span>
+                </button>
+                <div class="mentor-content hidden">
+                    This project simulates a real Fortune 500 analytics workflow. Every section maps to a deliverable interviewers look for: (1) KPI definition & calculation, (2) trend analysis with anomaly detection, (3) cohort retention modeling, (4) segment-level deep dives, (5) channel attribution, and (6) an executive summary with actionable recommendations.
+                </div>
+            </div>
+
+            <div class="kpi-cards" id="kpi-row"></div>
+
+            <div class="mentor-box" onclick="toggleMentor(this)">
+                <button class="mentor-btn">
+                    <span>🎓 Mentor Note: Defining KPIs</span>
+                    <span class="mentor-arrow">▶</span>
+                </button>
+                <div class="mentor-content hidden">
+                    Never just pick metrics — define WHY each one matters. Churn Rate is the #1 metric because it's 5-7x cheaper to retain than acquire. LTV/CAC Ratio is the north star for unit economics — anything below 3:1 means the business model needs work.
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Revenue & Customer Trends</h2>
+                        <p>12-month trajectory</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Revenue by Product</h2>
+                        <p>Product mix breakdown</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="productChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 1: CHURN DEEP-DIVE -->
+        <div id="tab-1" class="tab-panel">
+            <div class="section-header">
+                <h2><span class="section-header-bar"></span>Churn Deep-Dive</h2>
+                <p>Understanding why customers leave and when</p>
+            </div>
+
+            <div class="chart-grid equal">
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Churn Rate Trend</h2>
+                        <p>Monthly churn percentage</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="churnChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Churn vs New Acquisitions</h2>
+                        <p>Net customer flow</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="acquisitionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 16px;">
+                <div class="section-header">
+                    <h2><span class="section-header-bar"></span>LTV vs CAC by Month</h2>
+                    <p>Unit economics trajectory</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ltvCacChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: COHORT ANALYSIS -->
+        <div id="tab-2" class="tab-panel">
+            <div class="section-header">
+                <h2><span class="section-header-bar"></span>Cohort Retention Analysis</h2>
+                <p>Tracking customer retention from acquisition through 12 months</p>
+            </div>
+
+            <div class="chart-card" style="margin-top: 22px;">
+                <div class="section-header">
+                    <h2><span class="section-header-bar"></span>Retention Heatmap</h2>
+                    <p>% of customers still active at each milestone</p>
+                </div>
+                <div id="cohort-heatmap-container" style="overflow-x: auto; margin-top: 12px;"></div>
+            </div>
+
+            <div class="chart-grid equal" style="margin-top: 16px;">
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Cohort Retention Curves</h2>
+                        <p>Visual comparison across acquisition quarters</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="cohortChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Key Cohort Insights</h2>
+                        <p>Derived metrics</p>
+                    </div>
+                    <div id="cohort-insights" style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SEGMENTATION -->
+        <div id="tab-3" class="tab-panel">
+            <div class="section-header">
+                <h2><span class="section-header-bar"></span>Customer Segmentation</h2>
+                <p>Profitability and behavior by customer tier</p>
+            </div>
+
+            <div class="chart-grid equal">
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Revenue by Segment</h2>
+                        <p>Where the money comes from</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="segmentRevenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>LTV / CAC Ratio</h2>
+                        <p>Unit economics health (target: >3x)</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="ltvCacRatioChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 16px;">
+                <div class="section-header">
+                    <h2><span class="section-header-bar"></span>Segment Scorecard</h2>
+                    <p>Full breakdown table</p>
+                </div>
+                <div id="segment-table-container" style="overflow-x: auto; margin-top: 8px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 4: CHANNEL ROI -->
+        <div id="tab-4" class="tab-panel">
+            <div class="section-header">
+                <h2><span class="section-header-bar"></span>Channel ROI Analysis</h2>
+                <p>Which acquisition channels deliver the best return?</p>
+            </div>
+
+            <div class="chart-grid equal">
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Customers & CAC by Channel</h2>
+                        <p>Volume vs. efficiency tradeoff</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="channelChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="section-header">
+                        <h2><span class="section-header-bar"></span>Channel Conversion Rate</h2>
+                        <p>Lead-to-customer conversion efficiency</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="conversionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 16px;">
+                <div class="section-header">
+                    <h2><span class="section-header-bar"></span>Channel Performance Scorecard</h2>
+                    <p>Ranked by ROI</p>
+                </div>
+                <div id="channel-scorecard" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 14px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 5: EXECUTIVE SUMMARY -->
+        <div id="tab-5" class="tab-panel">
+            <div class="section-header">
+                <h2><span class="section-header-bar"></span>Executive Summary</h2>
+                <p>Findings, insights, and strategic recommendations for leadership</p>
+            </div>
+
+            <div class="summary-banner">
+                <h3>📌 Bottom Line</h3>
+                <p>Customer churn has declined 2.6 percentage points year-over-year, driven by improved onboarding and product engagement. Enterprise and Mid-Market segments deliver strong unit economics (LTV/CAC > 6x). Referral is our highest-ROI acquisition channel at $140 CAC. Three strategic actions below could increase annual revenue by an estimated $2.4M.</p>
+            </div>
+
+            <div class="findings-grid">
+                <div class="finding-card">
+                    <div class="finding-header">
+                        <span class="finding-icon">📉</span>
+                        <h4 class="finding-title" style="color: #34d399;">Finding 1: Churn is Declining</h4>
+                    </div>
+                    <div class="finding-points">
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #34d399;">●</span>
+                            <span class="finding-text">Churn dropped from 6.8% (Jan) to 4.2% (Dec) — a 38% relative improvement</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #34d399;">●</span>
+                            <span class="finding-text">Q3 product update correlates with the sharpest decline</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #34d399;">●</span>
+                            <span class="finding-text">Enterprise churn (3.2%) is 3x better than Consumer (9.4%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="finding-card">
+                    <div class="finding-header">
+                        <span class="finding-icon">💎</span>
+                        <h4 class="finding-title" style="color: #38bdf8;">Finding 2: Enterprise Drives Profit</h4>
+                    </div>
+                    <div class="finding-points">
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #38bdf8;">●</span>
+                            <span class="finding-text">Enterprise = 18% of customers but 42% of revenue</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #38bdf8;">●</span>
+                            <span class="finding-text">LTV/CAC of 6.77x indicates highly efficient unit economics</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #38bdf8;">●</span>
+                            <span class="finding-text">Retention at 96.8% — these customers are the foundation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="finding-card">
+                    <div class="finding-header">
+                        <span class="finding-icon">🚀</span>
+                        <h4 class="finding-title" style="color: #a78bfa;">Finding 3: Referral is Growth Engine</h4>
+                    </div>
+                    <div class="finding-points">
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #a78bfa;">●</span>
+                            <span class="finding-text">Lowest CAC ($140) and highest conversion rate (4.5%)</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #a78bfa;">●</span>
+                            <span class="finding-text">Referral customers show 15% higher 12-month retention</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #a78bfa;">●</span>
+                            <span class="finding-text">Currently only 23% of new acquisitions — room to scale</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="finding-card">
+                    <div class="finding-header">
+                        <span class="finding-icon">⚠️</span>
+                        <h4 class="finding-title" style="color: #f87171;">Finding 4: Consumer Needs Attention</h4>
+                    </div>
+                    <div class="finding-points">
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #f87171;">●</span>
+                            <span class="finding-text">9.4% churn rate is destroying value at scale (22K+ customers)</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #f87171;">●</span>
+                            <span class="finding-text">LTV/CAC of 6.18x is healthy but declining QoQ</span>
+                        </div>
+                        <div class="finding-point">
+                            <span class="finding-bullet" style="color: #f87171;">●</span>
+                            <span class="finding-text">Onboarding completion rate is 41% — well below 70% benchmark</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 20px;">
+                <div class="section-header">
+                    <h2><span class="section-header-bar"></span>Strategic Recommendations</h2>
+                    <p>Action items ranked by projected impact</p>
+                </div>
+                <div class="recommendations">
+                    <div class="recommendation top">
+                        <div class="rec-number one">1</div>
+                        <div class="rec-content">
+                            <div class="rec-header">
+                                <h4 class="rec-title">Scale Referral Program</h4>
+                                <div class="rec-tags">
+                                    <span class="rec-tag impact">Impact: $1.1M</span>
+                                    <span class="rec-tag timeline">Q1 2025</span>
+                                </div>
+                            </div>
+                            <p class="rec-description">Invest in a structured referral incentive program. At current CAC ($140) and LTV ($890), scaling referral from 23% → 40% of acquisitions yields the highest net-new revenue with lowest risk.</p>
+                        </div>
+                    </div>
+                    <div class="recommendation">
+                        <div class="rec-number two">2</div>
+                        <div class="rec-content">
+                            <div class="rec-header">
+                                <h4 class="rec-title">Enterprise Expansion Play</h4>
+                                <div class="rec-tags">
+                                    <span class="rec-tag impact">Impact: $780K</span>
+                                    <span class="rec-tag timeline">Q1–Q2 2025</span>
+                                </div>
+                            </div>
+                            <p class="rec-description">Launch an upsell motion targeting Enterprise accounts at 6-month mark. With 96.8% retention and $4,200 LTV, even a 12% expansion rate creates significant incremental ARR.</p>
+                        </div>
+                    </div>
+                    <div class="recommendation">
+                        <div class="rec-number three">3</div>
+                        <div class="rec-content">
+                            <div class="rec-header">
+                                <h4 class="rec-title">Consumer Onboarding Overhaul</h4>
+                                <div class="rec-tags">
+                                    <span class="rec-tag impact">Impact: $520K</span>
+                                    <span class="rec-tag timeline">Q2 2025</span>
+                                </div>
+                            </div>
+                            <p class="rec-description">Rebuild the Consumer onboarding flow. Completing onboarding correlates with 2.3x lower 90-day churn. Fixing the 41% completion rate to 70% could retain 1,800+ customers annually.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-top: 20px; background: #1a1640; border: 1px solid #3b3570;">
+                <div class="section-header">
+                    <h2><span class="section-header-bar"></span>🎓 Resume Skills Checklist</h2>
+                    <p>What this project demonstrates to interviewers</p>
+                </div>
+                <div class="skills-grid">
+                    <div class="skill-item">
+                        <div class="skill-name">✅ KPI Definition & Calculation</div>
+                        <div class="skill-desc">Business metric design from scratch</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Trend Analysis</div>
+                        <div class="skill-desc">Time-series analysis with narrative framing</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Cohort Retention Modeling</div>
+                        <div class="skill-desc">Acquisition-based retention curves</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Customer Segmentation</div>
+                        <div class="skill-desc">Profitability analysis by tier</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Unit Economics (LTV/CAC)</div>
+                        <div class="skill-desc">Core SaaS business health metrics</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Channel Attribution</div>
+                        <div class="skill-desc">Marketing ROI and budget allocation</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Data Visualization</div>
+                        <div class="skill-desc">Executive-ready dashboard design</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Storytelling with Data</div>
+                        <div class="skill-desc">Findings → Insights → Recommendations</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Executive Communication</div>
+                        <div class="skill-desc">C-suite ready summary with action items</div>
+                    </div>
+                    <div class="skill-item">
+                        <div class="skill-name">✅ Synthetic Data Generation</div>
+                        <div class="skill-desc">Realistic data creation for portfolio</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Generation
+        const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const SEGMENTS = ["Enterprise","Mid-Market","SMB","Consumer"];
+        const CHANNELS = ["Organic","Paid Search","Referral","Direct","Social"];
+        const PRODUCTS = ["Pro Plan","Team Plan","Enterprise Plan","Starter Plan"];
+        const PIE_COLORS = ["#38bdf8","#34d399","#a78bfa","#f472b6"];
+
+        function seededRandom(seed) {
+            let s = seed;
+            return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+        }
+
+        const rng = seededRandom(42);
+
+        // Monthly Data
+        const monthlyData = MONTHS.map((m, i) => {
+            const base = 4200 + i * 180;
+            const churn = Math.round(6.8 - i * 0.18 + rng() * 1.2);
+            const newCust = Math.round(base * (1 + rng() * 0.3));
+            const churned = Math.round(newCust * (churn / 100));
+            const ltv = Math.round(820 + i * 35 + rng() * 120);
+            const cac = Math.round(180 - i * 3 + rng() * 40);
+            const rev = Math.round(newCust * ltv / 12);
+            return {
+                month: m,
+                newCustomers: newCust,
+                churnRate: churn,
+                ltv,
+                cac,
+                revenue: rev,
+                churned,
+                activeCustomers: newCust - churned,
+                nps: Math.round(42 + i * 2.1 + rng() * 8),
+                engagementScore: Math.round(58 + i * 1.5 + rng() * 10)
+            };
+        });
+
+        // Segment Data
+        const segmentData = SEGMENTS.map((seg, i) => {
+            const weights = [0.18, 0.28, 0.34, 0.20];
+            const churnRates = [3.2, 5.1, 7.8, 9.4];
+            const ltvs = [4200, 2100, 890, 420];
+            const cacs = [620, 310, 145, 68];
+            return {
+                segment: seg,
+                customers: Math.round(52400 * weights[i]),
+                churnRate: churnRates[i],
+                ltv: ltvs[i],
+                cac: cacs[i],
+                ltvCacRatio: +(ltvs[i] / cacs[i]).toFixed(2),
+                revenue: Math.round(52400 * weights[i] * ltvs[i] / 12),
+                retentionRate: 100 - churnRates[i]
+            };
+        });
+
+        // Cohort Data
+        const cohortData = [
+            { cohort:"Q1 2023", m0:100, m3:82, m6:71, m9:64, m12:58 },
+            { cohort:"Q2 2023", m0:100, m3:85, m6:74, m9:68, m12:63 },
+            { cohort:"Q3 2023", m0:100, m3:88, m6:78, m9:72, m12:67 },
+            { cohort:"Q4 2023", m0:100, m3:86, m6:76, m9:70, m12:65 },
+            { cohort:"Q1 2024", m0:100, m3:90, m6:80, m9:74, m12:69 },
+            { cohort:"Q2 2024", m0:100, m3:91, m6:82, m9:76, m12:null },
+            { cohort:"Q3 2024", m0:100, m3:89, m6:79, m9:null, m12:null },
+            { cohort:"Q4 2024", m0:100, m3:92, m6:null, m9:null, m12:null },
+        ];
+
+        // Channel Data
+        const channelData = CHANNELS.map((ch, i) => {
+            const custCount = [3200, 5800, 4100, 2900, 2200];
+            const cacs = [220, 195, 140, 165, 280];
+            const convRates = [3.2, 2.8, 4.5, 3.9, 2.1];
+            return {
+                channel: ch,
+                customers: custCount[i],
+                cac: cacs[i],
+                conversionRate: convRates[i],
+                revenue: Math.round(custCount[i] * 1200)
+            };
+        });
+
+        // Product Mix
+        const productMix = PRODUCTS.map((p, i) => {
+            const rev = [2840000, 1920000, 1460000, 890000];
+            const cust = [8400, 12600, 5200, 22100];
+            return { name: p, revenue: rev[i], customers: cust[i], arpu: Math.round(rev[i]/cust[i]) };
+        });
+
+        // Chart instances
+        let charts = {};
+
+        // Tab Switching
+        function switchTab(tabIndex) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tabIndex}`).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Initialize charts on tab switch
+            setTimeout(() => {
+                if (tabIndex === 0) initOverviewCharts();
+                else if (tabIndex === 1) initChurnCharts();
+                else if (tabIndex === 2) initCohortCharts();
+                else if (tabIndex === 3) initSegmentationCharts();
+                else if (tabIndex === 4) initChannelCharts();
+            }, 100);
+        }
+
+        // Mentor Box Toggle
+        function toggleMentor(box) {
+            const content = box.querySelector('.mentor-content');
+            const arrow = box.querySelector('.mentor-arrow');
+            content.classList.toggle('hidden');
+            arrow.classList.toggle('open');
+        }
+
+        // Initialize KPI Cards
+        function initKPICards() {
+            const totalCustomers = segmentData.reduce((a, s) => a + s.customers, 0);
+            const totalRevenue = segmentData.reduce((a, s) => a + s.revenue, 0);
+            const avgChurn = +(segmentData.reduce((a, s) => a + s.churnRate * s.customers, 0) / totalCustomers).toFixed(1);
+            const avgLTV = Math.round(segmentData.reduce((a, s) => a + s.ltv * s.customers, 0) / totalCustomers);
+            const bestCAC = Math.min(...channelData.map(c => c.cac));
+
+            const kpis = [
+                { title: "Total Customers", value: totalCustomers.toLocaleString(), change: 12.4, icon: "👤" },
+                { title: "Monthly Revenue", value: `$${(totalRevenue/1000).toFixed(0)}K`, change: 8.7, icon: "💰" },
+                { title: "Avg Churn Rate", value: `${avgChurn}%`, change: -1.8, icon: "📉" },
+                { title: "Avg LTV", value: `$${avgLTV.toLocaleString()}`, change: 5.2, icon: "🎯" },
+                { title: "Best CAC Channel", value: `$${bestCAC}`, change: -9.1, icon: "📣" },
+            ];
+
+            const container = document.getElementById('kpi-row');
+            container.innerHTML = kpis.map(kpi => `
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">${kpi.title}</span>
+                        <span class="kpi-icon">${kpi.icon}</span>
+                    </div>
+                    <div class="kpi-value">${kpi.value}</div>
+                    <div class="kpi-change">
+                        <span class="kpi-badge ${kpi.change >= 0 ? 'positive' : 'negative'}">
+                            ${kpi.change >= 0 ? '▲' : '▼'} ${Math.abs(kpi.change)}%
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Chart initialization functions
+        function initOverviewCharts() {
+            const ctx1 = document.getElementById('revenueChart')?.getContext('2d');
+            const ctx2 = document.getElementById('productChart')?.getContext('2d');
+
+            if (ctx1 && !charts.revenue) {
+                charts.revenue = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyData.map(d => d.month),
+                        datasets: [{
+                            label: 'Revenue ($)',
+                            data: monthlyData.map(d => d.revenue),
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#38bdf8'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }
+
+            if (ctx2 && !charts.product) {
+                charts.product = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: productMix.map(p => p.name),
+                        datasets: [{
+                            data: productMix.map(p => p.revenue),
+                            backgroundColor: PIE_COLORS
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } }
+                    }
+                });
+            }
+        }
+
+        function initChurnCharts() {
+            const ctx1 = document.getElementById('churnChart')?.getContext('2d');
+            const ctx2 = document.getElementById('acquisitionChart')?.getContext('2d');
+            const ctx3 = document.getElementById('ltvCacChart')?.getContext('2d');
+
+            if (ctx1 && !charts.churn) {
+                charts.churn = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyData.map(d => d.month),
+                        datasets: [{
+                            label: 'Churn Rate %',
+                            data: monthlyData.map(d => d.churnRate),
+                            borderColor: '#f87171',
+                            backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#f87171'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            if (ctx2 && !charts.acquisition) {
+                charts.acquisition = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: monthlyData.map(d => d.month),
+                        datasets: [
+                            {
+                                label: 'New',
+                                data: monthlyData.map(d => d.newCustomers),
+                                backgroundColor: '#34d399'
+                            },
+                            {
+                                label: 'Churned',
+                                data: monthlyData.map(d => d.churned),
+                                backgroundColor: '#f87171'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } }
+                    }
+                });
+            }
+
+            if (ctx3 && !charts.ltvCac) {
+                charts.ltvCac = new Chart(ctx3, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'LTV vs CAC',
+                            data: monthlyData.map(d => ({x: d.cac, y: d.ltv})),
+                            backgroundColor: monthlyData.map((_, i) => 
+                                i < 4 ? '#f87171' : i < 8 ? '#fbbf24' : '#34d399'
+                            ),
+                            pointRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: {
+                            x: { title: { display: true, text: 'CAC ($)' } },
+                            y: { title: { display: true, text: 'LTV ($)' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function initCohortCharts() {
+            const ctx = document.getElementById('cohortChart')?.getContext('2d');
+            
+            // Heatmap
+            const heatmapContainer = document.getElementById('cohort-heatmap-container');
+            if (heatmapContainer) {
+                heatmapContainer.innerHTML = `
+                    <table class="heatmap-table">
+                        <thead>
+                            <tr>
+                                <th>Cohort</th>
+                                <th class="center">Month 0</th>
+                                <th class="center">Month 3</th>
+                                <th class="center">Month 6</th>
+                                <th class="center">Month 9</th>
+                                <th class="center">Month 12</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${cohortData.map(row => `
+                                <tr>
+                                    <td>${row.cohort}</td>
+                                    ${['m0', 'm3', 'm6', 'm9', 'm12'].map(p => {
+                                        const val = row[p];
+                                        let color = '#475569';
+                                        if (val !== null) {
+                                            if (val >= 85) color = '#166534';
+                                            else if (val >= 75) color = '#15803d';
+                                            else if (val >= 65) color = '#ca8a04';
+                                            else if (val >= 55) color = '#9a3412';
+                                            else color = '#7f1d1d';
+                                        }
+                                        return `<td><div class="heatmap-cell" style="background: ${color}; color: ${val === null ? '#94a3b8' : '#fff'}">${val !== null ? val + '%' : '—'}</div></td>`;
+                                    }).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            // Insights
+            const insightsContainer = document.getElementById('cohort-insights');
+            if (insightsContainer) {
+                const insights = [
+                    { label: "Best 12-Mo Retention", value: "67%", cohort: "Q3 2023", color: "#34d399" },
+                    { label: "Worst 12-Mo Retention", value: "58%", cohort: "Q1 2023", color: "#f87171" },
+                    { label: "Avg 3-Mo Retention", value: "87.5%", cohort: "All Cohorts", color: "#38bdf8" },
+                    { label: "Retention Improvement", value: "+9 pts", cohort: "Q1→Q3 2023", color: "#a78bfa" },
+                ];
+                insightsContainer.innerHTML = insights.map(i => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #334155; border-radius: 8px;">
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: #f1f5f9;">${i.label}</div>
+                            <div style="font-size: 11px; color: #94a3b8;">${i.cohort}</div>
+                        </div>
+                        <div style="font-size: 20px; font-weight: 700; color: ${i.color};">${i.value}</div>
+                    </div>
+                `).join('');
+            }
+
+            // Chart
+            if (ctx && !charts.cohort) {
+                charts.cohort = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ["Mo 0", "Mo 3", "Mo 6", "Mo 9", "Mo 12"],
+                        datasets: [
+                            { label: "Q1 2023", data: [100, 82, 71, 64, 58], borderColor: "#f87171", borderDasharray: [5, 3] },
+                            { label: "Q2 2023", data: [100, 85, 74, 68, 63], borderColor: "#fbbf24", borderDasharray: [5, 3] },
+                            { label: "Q3 2023", data: [100, 88, 78, 72, 67], borderColor: "#34d399" },
+                            { label: "Q4 2023", data: [100, 86, 76, 70, 65], borderColor: "#38bdf8" },
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: { y: { min: 40, max: 100 } }
+                    }
+                });
+            }
+        }
+
+        function initSegmentationCharts() {
+            const ctx1 = document.getElementById('segmentRevenueChart')?.getContext('2d');
+            const ctx2 = document.getElementById('ltvCacRatioChart')?.getContext('2d');
+
+            if (ctx1 && !charts.segmentRevenue) {
+                charts.segmentRevenue = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: segmentData.map(s => s.segment),
+                        datasets: [{
+                            label: 'Monthly Revenue',
+                            data: segmentData.map(s => s.revenue),
+                            backgroundColor: PIE_COLORS
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            if (ctx2 && !charts.ltvCacRatio) {
+                charts.ltvCacRatio = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: segmentData.map(s => s.segment),
+                        datasets: [{
+                            label: 'LTV/CAC Ratio',
+                            data: segmentData.map(s => s.ltvCacRatio),
+                            backgroundColor: segmentData.map(s => s.ltvCacRatio >= 5 ? '#34d399' : '#fbbf24')
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { max: 8 } }
+                    }
+                });
+            }
+
+            // Segment Table
+            const tableContainer = document.getElementById('segment-table-container');
+            if (tableContainer) {
+                tableContainer.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Segment</th>
+                                <th>Customers</th>
+                                <th>LTV</th>
+                                <th>CAC</th>
+                                <th>LTV/CAC</th>
+                                <th>Churn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${segmentData.map((s, i) => `
+                                <tr>
+                                    <td style="color: ${PIE_COLORS[i]}; font-weight: 600;">${s.segment}</td>
+                                    <td>${s.customers.toLocaleString()}</td>
+                                    <td>$${s.ltv.toLocaleString()}</td>
+                                    <td>$${s.cac}</td>
+                                    <td style="color: ${s.ltvCacRatio >= 5 ? '#34d399' : '#fbbf24'}; font-weight: 700;">${s.ltvCacRatio}x</td>
+                                    <td style="color: ${s.churnRate <= 5 ? '#34d399' : '#fbbf24'}">${s.churnRate}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        }
+
+        function initChannelCharts() {
+            const ctx1 = document.getElementById('channelChart')?.getContext('2d');
+            const ctx2 = document.getElementById('conversionChart')?.getContext('2d');
+
+            if (ctx1 && !charts.channel) {
+                charts.channel = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: channelData.map(c => c.channel),
+                        datasets: [
+                            {
+                                label: 'Customers',
+                                data: channelData.map(c => c.customers),
+                                backgroundColor: '#38bdf8',
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'CAC ($)',
+                                data: channelData.map(c => c.cac * 10),
+                                backgroundColor: '#fbbf24',
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { position: 'left' },
+                            y1: { position: 'right', max: 3500 }
+                        }
+                    }
+                });
+            }
+
+            if (ctx2 && !charts.conversion) {
+                charts.conversion = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: channelData.map(c => c.channel),
+                        datasets: [{
+                            label: 'Conversion %',
+                            data: channelData.map(c => c.conversionRate),
+                            backgroundColor: channelData.map(c => c.conversionRate >= 4 ? '#34d399' : '#38bdf8')
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { max: 5 } }
+                    }
+                });
+            }
+
+            // Scorecard
+            const scorecardContainer = document.getElementById('channel-scorecard');
+            if (scorecardContainer) {
+                scorecardContainer.innerHTML = [...channelData]
+                    .sort((a,b) => (b.revenue/b.cac) - (a.revenue/a.cac))
+                    .map((ch, i) => `
+                        <div style="background: #334155; border-radius: 10px; padding: 16px; border: ${i === 0 ? '1px solid #34d399' : '1px solid #475569'}; position: relative;">
+                            ${i === 0 ? '<div style="position: absolute; top: 8px; right: 8px; font-size: 11px; color: #34d399; font-weight: 700;">★ Best</div>' : ''}
+                            <div style="font-size: 13px; font-weight: 700; color: #f1f5f9; margin-bottom: 8px;">${ch.channel}</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">Customers</div>
+                            <div style="font-size: 16px; font-weight: 700; color: #38bdf8;">${ch.customers.toLocaleString()}</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; margin-bottom: 2px;">CAC</div>
+                            <div style="font-size: 14px; color: #fbbf24;">$${ch.cac}</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; margin-bottom: 2px;">Conv. Rate</div>
+                            <div style="font-size: 14px; color: ${ch.conversionRate >= 4 ? '#34d399' : '#94a3b8'}">${ch.conversionRate}%</div>
+                        </div>
+                    `).join('');
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initKPICards();
+            initOverviewCharts();
+        });
+    </script>
+</body>
+</html>
